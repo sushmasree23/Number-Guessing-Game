@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Number Guessing Game</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;  font-family: Arial, sans-serif;
+      display: flex; flex-direction: column; align-items: center;
+      min-height: 100vh; background: #f5f7fa;
+      color: #333;
+    }
+    h1 { margin-top: 40px; color: #2c3e50; }
+    .game-box {
+      background: #fff; padding: 30px 40px; border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1); text-align: center;
+      max-width: 400px; width: 90%;
+    }
+    input[type="number"] {
+      width: 100%; padding: 10px; margin: 12px 0;
+      border: 2px solid #2c3e50; border-radius: 6px; font-size: 1rem;
+    }
+    button {
+      background: #2c3e50; color: #fff; border: none;
+      padding: 10px 22px; border-radius: 6px; cursor: pointer;
+      font-size: 1rem; transition: opacity 0.2s;
+    }
+    button:hover { opacity: 0.9; }
+    .message { margin-top: 18px; font-size: 1.1rem; min-height: 1.4em; }
+    .stats { margin-top: 8px; font-size: 0.9rem; color: #555; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <h1>Number Guessing Game</h1>
+
+  <div class="game-box">
+    <p>Guess a number between <strong>1 and 100</strong>.</p>
+
+    <input id="guessInput" type="number" min="1" max="100" placeholder="Enter your guess" />
+    <button id="guessBtn">Guess</button>
+    <button id="restartBtn" class="hidden">Play Again</button>
+
+    <div class="message" id="message"></div>
+    <div class="stats" id="stats"></div>
+  </div>
+
+  <script>
+    // --- Configuration ---
+    const MAX_ATTEMPTS = 10;
+    const MIN = 1;
+    const MAX = 100;
+
+    // --- Game state ---
+    let secretNumber = generateNumber(MIN, MAX);
+    let attemptsLeft = MAX_ATTEMPTS;
+    let gameOver = false;
+
+    // --- DOM Elements ---
+    const guessInput = document.getElementById('guessInput');
+    const guessBtn   = document.getElementById('guessBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const messageEl  = document.getElementById('message');
+    const statsEl    = document.getElementById('stats');
+
+    // --- Helpers ---
+    function generateNumber(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function updateStats() {
+      statsEl.textContent = `Attempts left: ${attemptsLeft}`;
+    }
+
+    function endGame(text, won) {
+      messageEl.textContent = text;
+      messageEl.style.color = won ? 'green' : 'red';
+      gameOver = true;
+      guessInput.disabled = true;
+      guessBtn.disabled = true;
+      restartBtn.classList.remove('hidden');
+    }
+
+    // --- Event Handlers ---
+    guessBtn.addEventListener('click', () => {
+      if (gameOver) return;
+
+      const guess = Number(guessInput.value);
+      if (!guess || guess < MIN || guess > MAX) {
+        messageEl.textContent = '⛔ Please enter a valid number!';
+        messageEl.style.color = '#e67e22';
+        return;
+      }
+
+      attemptsLeft--;
+      if (guess === secretNumber) {
+        endGame(`🎉 Correct! ${guess} is the number.`, true);
+      } else if (attemptsLeft === 0) {
+        endGame(`💥 Out of attempts! The number was ${secretNumber}.`, false);
+      } else {
+        messageEl.textContent = guess > secretNumber ? '📉 Too high!' : '📈 Too low!';
+        messageEl.style.color = '#2c3e50';
+        updateStats();
+      }
+      guessInput.value = '';
+      guessInput.focus();
+    });
+
+    restartBtn.addEventListener('click', () => {
+      secretNumber = generateNumber(MIN, MAX);
+      attemptsLeft = MAX_ATTEMPTS;
+      gameOver = false;
+      messageEl.textContent = '';
+      guessInput.disabled = false;
+      guessBtn.disabled = false;
+      restartBtn.classList.add('hidden');
+      updateStats();
+      guessInput.focus();
+    });
+
+    // Initial UI setup
+    updateStats();
+    guessInput.focus();
+  </script>
+</body>
+</html>
